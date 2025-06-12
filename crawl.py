@@ -4,8 +4,10 @@ from collections import deque
 import concurrent.futures
 import pickle
 import os
+from dotenv import load_dotenv
 
-API_KEY = "RGAPI-90af0c5d-b9b8-4dd2-8f78-9bdcc602ce2b"
+load_dotenv()
+API_KEY = os.getenv('RIOT_API_KEY')
 HEADERS = {"X-Riot-Token": API_KEY}
 REGIONS = ["na1", "euw", "kr"]
 V5_REGIONS = ["americas"]
