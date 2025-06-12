@@ -14,6 +14,10 @@ V5_REGIONS = ["americas"]
 TIERS = ["CHALLENGER"]
 LEADERBOARD = "https://op.gg/lol/leaderboards/tier?region="
 
+# checkpoint system for resuming
+CHECKPOINT_INTERVAL = 50
+CHECKPOINT_FILE = "match_ids_checkpoint.pk1"
+
 
 def get_players(region, tier, division, page):
     url = f"https://{region}.api.riotgames.com/lol/league-exp/v4/entries/RANKED_SOLO_5x5/{tier}/{division}?page={page}"
@@ -67,10 +71,6 @@ def collect_match_ids(players, v5region):
     total_players = len(players)
     processed = 0
 
-    # checkpoint system for resuming
-    CHECKPOINT_INTERVAL = 50
-    CHECKPOINT_FILE = "match_ids_checkpoint.pk1"
-
     # load from checkpoint if it exists
     if os.path.exists(CHECKPOINT_FILE):
         with open(CHECKPOINT_FILE, "rb") as f:
@@ -107,9 +107,18 @@ def collect_match_ids(players, v5region):
 
         time.sleep(1)
 
-
+    with open(CHECKPOINT_FILE, "wb") as f:
+        pickle.dump({"matches": unique_matches, "processed": processed}, f)
+    print(f"Finished processing matches of all {processed} players")
+    
     return list(unique_matches)
 
+
+def load_unique_matches():
+    if os.path.exists(CHECKPOINT_FILE):
+        with open(CHECKPOINT_FILE, "rb") as f:
+            matches = pickle.load(f)
+            return matches
 
 def get_match_details(match_id, v5region):
     url = f"https://{v5region}.api.riotgames.com/lol/match/v5/matches/{match_id}"
@@ -130,6 +139,7 @@ def main():
 
     match_ids = collect_match_ids(players, "americas")
 
+    print(len(match_ids))
 
 
 
